@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title> HealthCare Clinic — Appointments</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --card:#0b1224;        /* deep card */
+      --muted:#94a3b8;       /* slate-400 */
+      --text:#e2e8f0;        /* slate-200 */
+      --brand:#10b981;       /* emerald */
+      --brand-2:#22d3ee;     /* cyan */
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --ok:#22c55e;
+      --ring:0 0 0 3px rgba(34,211,238,.25);
+      --shadow:0 10px 30px rgba(2,8,23,.45);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";
+      background:radial-gradient(1200px 800px at 10% -10%, rgba(34,211,238,.08), transparent),
+                 radial-gradient(900px 600px at 120% -20%, rgba(16,185,129,.08), transparent),
+                 var(--bg);
+      color:var(--text);
+      line-height:1.45;
+    }
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(140%) blur(10px);
+      background:rgba(2,6,23,.6);
+      border-bottom:1px solid rgba(148,163,184,.15);
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:16px 20px}
+    .row{display:flex; align-items:center; gap:14px; justify-content:space-between}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:700}
+    .brand .logo{width:36px; height:36px; border-radius:11px; background:linear-gradient(135deg,var(--brand),var(--brand-2)); box-shadow:var(--shadow)}
+    nav a{color:var(--text); text-decoration:none; opacity:.85; margin:0 10px}
+    nav a:hover{opacity:1}
+
+    .hero{padding:48px 20px 8px}
+    .hero h1{font-size:clamp(28px,4vw,44px); margin:0 0 10px}
+    .hero p{margin:0; color:var(--muted)}
+
+    .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.005)); border:1px solid rgba(148,163,184,.12); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .pad{padding:18px}
+
+    /* Doctors */
+    .doc-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px}
+    .doc{overflow:hidden}
+    .doc .img{height:300px; border-radius:14px; background:#111; overflow:hidden}
+    .doc img{width:100%; height:100%; object-fit:cover; display:block;}
+    .doc h3{margin:12px 0 4px}
+    .doc .muted{color:var(--muted); font-size:.95rem}
+    .chip{display:inline-block; padding:6px 10px; border-radius:999px; font-size:.8rem; border:1px solid rgba(148,163,184,.2); color:#cbd5e1}
+    .price{font-weight:700; color:#a7f3d0}
+    .btn{appearance:none; border:1px solid rgba(148,163,184,.2); background:rgba(15,23,42,.6); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer}
+    .btn:hover{box-shadow:var(--ring)}
+    .btn.brand{background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#062027; border:none; font-weight:700}
+    .btn.ghost{background:transparent}
+    .btn.warn{background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.45)}
+    .btn.danger{background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.4)}
+
+    /* Booking */
+    form label{display:block; font-weight:600; margin:12px 0 6px}
+    input, select{width:100%; background:rgba(2,6,23,.5); color:var(--text); border:1px solid rgba(148,163,184,.25); border-radius:12px; padding:10px 12px}
+    input:focus, select:focus{outline:none; box-shadow:var(--ring)}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .help{color:var(--muted); font-size:.9rem}
+
+    .flex{display:flex; gap:10px; align-items:center}
+    .right{margin-left:auto}
+    .tag{font-size:.8rem; color:#cbd5e1; padding:4px 8px; border:1px dashed rgba(148,163,184,.35); border-radius:999px}
+
+    .status{font-size:.85rem; padding:6px 10px; border-radius:999px; display:inline-flex; align-items:center; gap:6px}
+    .status.pending{background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.35); color:#fde68a}
+    .status.approved{background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.45); color:#bbf7d0}
+    .status.declined{background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.4); color:#fecaca}
+
+    footer{margin-top:40px; border-top:1px solid rgba(148,163,184,.15); padding:24px; color:var(--muted)}
+
+    /* Tables */
+    table{width:100%; border-collapse:separate; border-spacing:0 10px}
+    th{color:#cbd5e1; text-align:left; font-weight:600; font-size:.9rem}
+    td, th{padding:8px 10px}
+    tr{background:rgba(255,255,255,.02)}
+    tr td:first-child, tr th:first-child{border-top-left-radius:10px; border-bottom-left-radius:10px}
+    tr td:last-child, tr th:last-child{border-top-right-radius:10px; border-bottom-right-radius:10px}
+
+    /* Responsive tweaks */
+    @media (max-width: 720px){
+      .row{flex-wrap:wrap; gap:8px}
+      nav{width:100%; text-align:center}
+      .two{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="wrap row">
+      <div class="brand"><div class="logo"></div><div>Gidi Wabantu HealthCare Clinic</div></div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#doctors">Doctors</a>
+        <a href="#booking">Book</a>
+        <a href="#mybookings">My Bookings</a>
+        <a href="#admin">Doctor/Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="wrap hero card pad">
+    <h1>Book a trusted doctor. Pay online. Get confirmed.</h1>
+    <p>View real-time availability, session prices in Rands, and secure your slot. If a doctor isn't free on your date, we'll suggest the next available time automatically.</p>
+  </section>
+
+  <!-- ABOUT / COMPANY INFO -->
+  <section id="about" class="wrap grid" style="margin-top:16px">
+    <div class="card pad" style="grid-column: span 7">
+      <h2>About our company</h2>
+      <p class="help">Founded: <strong>2025</strong></p>
+      <p class="help">Location: <strong>123 Khubvi Street, Limpopo, South Africa</strong></p>
+      <p>HealthCare Clinic is a multi‑specialty practice focused on accessible, patient‑first care. We combine experienced clinicians with modern digital tools so you can book, pay, and manage appointments from anywhere.</p>
+    </div>
+    <div class="card pad" style="grid-column: span 5">
+      <h3>Why patients choose us</h3>
+      <ul>
+        <li>Same‑week availability across key specialties</li>
+        <li>Transparent pricing (no hidden fees)</li>
+        <li>Instant booking confirmation & doctor approval workflow</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- DOCTORS -->
+  <section id="doctors" class="wrap" style="margin-top:16px">
+    <div class="row" style="margin-bottom:10px">
+      <h2>Doctors available</h2>
+      <div class="right flex">
+        <label class="help" for="filter">Filter by specialty</label>
+        <select id="filter" onchange="renderDoctors()">
+          <option value="all">All</option>
+          <option>Cardiology</option>
+          <option>Dermatology</option>
+          <option>Pediatrics</option>
+          <option>General Medicine</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="doctorsGrid" class="doc-grid"></div>
+  </section>
+
+  <!-- BOOKING -->
+  <section id="booking" class="wrap grid" style="margin-top:16px">
+    <div class="card pad" style="grid-column: span 7">
+      <h2>Book an appointment</h2>
+      <form id="bookingForm" onsubmit="handleBooking(event)">
+        <div class="two">
+          <div>
+            <label>Doctor</label>
+            <select id="doctorSelect" required onchange="onDoctorChange()">
+              <option value="">Select a doctor</option>
+            </select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="date" required onchange="onDateChange()" />
+          </div>
+        </div>
+
+        <div class="two">
+          <div>
+            <label>Time Slot</label>
+            <select id="slot" required>
+              <option value="">Select a time</option>
+            </select>
+            <div id="nextAvail" class="help" style="margin-top:6px"></div>
+          </div>
+          <div>
+            <label>Price (R)</label>
+            <input id="price" type="text" readonly />
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px">Patient details</h3>
+        <div class="two">
+          <div>
+            <label>Full name</label>
+            <input id="name" required />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="phone" required placeholder="071 234 5678" />
+          </div>
+        </div>
+        <label>Email</label>
+        <input id="email" type="email" required />
+
+        <h3 style="margin-top:12px">Payment</h3>
+        <div class="two">
+          <div>
+            <label>Method</label>
+            <select id="payMethod" required onchange="toggleCard()">
+              <option value="">Choose…</option>
+              <option value="Card">Card</option>
+              <option value="EFT">EFT</option>
+              <option value="Cash">Cash (on arrival)</option>
+            </select>
+          </div>
+          <div>
+            <label>Total (R)</label>
+            <input id="total" type="text" readonly />
+          </div>
+        </div>
+
+        <div id="cardFields" style="display:none">
+          <div class="two">
+            <div>
+              <label>Card number</label>
+              <input id="cardNumber" inputmode="numeric" placeholder="4111 1111 1111 1111" />
+            </div>
+            <div>
+              <label>Expiry (MM/YY)</label>
+              <input id="cardExp" placeholder="08/28" />
+            </div>
+          </div>
+          <div class="two">
+            <div>
+              <label>CVV</label>
+              <input id="cardCvv" inputmode="numeric" placeholder="123" />
+            </div>
+            <div class="flex" style="margin-top:28px"><span class="tag">Test payment — simulated</span></div>
+          </div>
+        </div>
+
+        <div class="flex" style="margin-top:16px">
+          <button class="btn brand" type="submit">Book & Pay</button>
+          <span class="help">You will receive an on‑screen confirmation. A doctor must approve the request.</span>
+        </div>
+      </form>
+    </div>
+
+    <div class="card pad" style="grid-column: span 5">
+      <h3>How availability works</h3>
+      <p class="help">Each doctor has set working days and 30‑minute time slots. If your chosen date has no availability, we'll suggest the <strong>next available day & time</strong> automatically.</p>
+      <div id="dayInfo" class="help"></div>
+      <hr style="border:none; border-top:1px solid rgba(148,163,184,.2); margin:14px 0">
+      <h3>Price & fees</h3>
+      <ul>
+        <li>Consultation fee varies by doctor</li>
+        <li>No booking fee</li>
+        <li>Pay securely via Card / EFT / Cash on arrival</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MY BOOKINGS (Client view) -->
+  <section id="mybookings" class="wrap card pad" style="margin-top:16px">
+    <div class="row"><h2>My bookings</h2><button class="btn ghost" onclick="clearMyBookings()">Clear local data</button></div>
+    <div id="myBookingsTable"></div>
+  </section>
+
+  <!-- ADMIN / DOCTOR PANEL -->
+  <section id="admin" class="wrap card pad" style="margin-top:16px">
+    <div class="row"><h2>Doctor / Admin approval queue</h2><span class="help">(Demo panel for doctors to approve/decline)</span></div>
+    <div id="adminTable"></div>
+  </section>
+
+  <footer class="wrap">
+    © 2025 HealthCare Clinic — Built as a demo (HTML, CSS & JavaScript only). No server required; data is stored in your browser.
+  </footer>
+
+  <template id="doctorCardTmpl">
+    <div class="card pad doc">
+      <div class="img"><img></div>
+      <h3></h3>
+      <div class="muted"></div>
+      <div class="flex" style="margin:8px 0 10px">
+        <span class="chip"></span>
+        <span class="chip right price"></span>
+      </div>
+      <button class="btn" onclick>View availability</button>
+    </div>
+  </template>
+
+  <script>
+    /***********************\n     * Data model (demo)   *
+     ***********************/
+    const doctors = [
+      {
+        id: 'd1',
+        name: 'Dr. Sarah Johnson',
+        specialty: 'Cardiology',
+        price: 700,
+        daysOfWeek: [1,3,5], // Mon, Wed, Fri
+        slots: ['09:00','09:30','10:00','10:30','11:00','14:00','14:30'],
+        photo: "dr.jpg"
+      },
+      {
+        id: 'd2',
+        name: 'Dr. Wabantu',
+        specialty: 'Dermatology',
+        price: 500,
+        daysOfWeek: [2,4], // Tue, Thu
+        slots: ['09:00','09:30','10:00','10:30','11:00','13:00','13:30','15:00'],
+        photo: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        id: 'd3',
+        name: 'Dr. Gidi WC',
+        specialty: 'Pediatrics',
+        price: 600,
+        daysOfWeek: [1,2,3,4,6], // Mon-Thu, Sat
+        slots: ['08:30','09:00','09:30','10:00','10:30','16:00'],
+        photo: "dr2.jpg"
+      },
+      {
+        id: 'd4',
+        name: 'Dr. Daniel Mokoena',
+        specialty: 'General Medicine',
+        price: 450,
+        daysOfWeek: [1,2,3,4,5], // Weekdays
+        slots: ['09:00','09:30','10:00','10:30','11:00','12:00','12:30','15:00'],
+        photo: 'https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=1200&auto=format&fit=crop'
+      }
+    ];
+
+    // Local storage keys
+    const LS_BOOKINGS = 'hc_bookings_v1'; // all bookings
+    const LS_MY_EMAIL = 'hc_my_email';    // who is the current patient (for My Bookings filter)
+
+    /** Utility functions **/
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const fmtR = n => `R${Number(n).toFixed(2)}`;
+
+    function todayStr(){
+      const t = new Date(); t.setHours(0,0,0,0);
+      return t.toISOString().slice(0,10);
+    }
+
+    function dow(dateStr){ return new Date(dateStr+"T00:00").getDay(); }
+
+    function nextAvailableDay(doctor, fromDateStr){
+      // find the soonest date >= fromDateStr whose dayOfWeek is in doctor.daysOfWeek
+      let d = new Date(fromDateStr+"T00:00");
+      for(let i=0;i<14;i++){ // look ahead up to 2 weeks
+        const day = d.getDay();
+        if(doctor.daysOfWeek.includes(day)){
+          return d.toISOString().slice(0,10);
+        }
+        d.setDate(d.getDate()+1);
+      }
+      return null;
+    }
+
+    function loadBookings(){
+      try{ return JSON.parse(localStorage.getItem(LS_BOOKINGS)) || []; }
+      catch{ return []; }
+    }
+    function saveBookings(list){ localStorage.setItem(LS_BOOKINGS, JSON.stringify(list)); }
+
+    function doctorById(id){ return doctors.find(d=>d.id===id); }
+
+    function takenSlots(doctorId, dateStr){
+      const all = loadBookings();
+      return all.filter(b=>b.doctorId===doctorId && b.date===dateStr && b.status!=='Declined').map(b=>b.time);
+    }
+
+    /***********************\n     * Render doctors list *
+     ***********************/
+    function renderDoctors(){
+      const grid = $('#doctorsGrid'); grid.innerHTML='';
+      const filter = $('#filter').value;
+      const list = filter==='all' ? doctors : doctors.filter(d=>d.specialty===filter);
+
+      const tmpl = $('#doctorCardTmpl');
+      list.forEach(doc=>{
+        const node = tmpl.content.cloneNode(true);
+        const card = node.querySelector('.doc');
+        const img = node.querySelector('img');
+        const h3 = node.querySelector('h3');
+        const muted = node.querySelector('.muted');
+        const chip = node.querySelector('.chip');
+        const price = node.querySelector('.price');
+        const btn = node.querySelector('button');
+        img.src = doc.photo; img.alt = doc.name;
+        h3.textContent = doc.name;
+        muted.textContent = doc.specialty;
+        chip.textContent = weekDaysText(doc.daysOfWeek);
+        price.textContent = fmtR(doc.price);
+        btn.textContent = 'Book with ' + doc.name.split(' ')[1];
+        btn.onclick = () => selectDoctor(doc.id);
+        grid.appendChild(node);
+      });
+
+      // keep select in sync
+      const sel = $('#doctorSelect');
+      const selected = sel.value;
+      sel.innerHTML = '<option value="">Select a doctor</option>' + doctors.map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
+      if(selected) sel.value = selected; // retain
+    }
+
+    function weekDaysText(days){
+      const map=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      // sorted ascending by day index
+      return days.slice().sort((a,b)=>a-b).map(i=>map[i]).join(', ');
+    }
+
+    /***********************\n     * Booking form logic  *
+     ***********************/
+    function selectDoctor(doctorId){
+      $('#doctorSelect').value = doctorId;
+      onDoctorChange();
+      window.location.hash = '#booking';
+    }
+
+    function onDoctorChange(){
+      const id = $('#doctorSelect').value; if(!id) return;
+      const doc = doctorById(id);
+      $('#price').value = doc.price.toFixed(2);
+      $('#total').value = doc.price.toFixed(2);
+
+      const d = $('#date');
+      d.min = todayStr();
+      if(!d.value || dow(d.value)===0){ d.value = todayStr(); }
+      // If the chosen date isn't on doctor's working days, suggest next
+      if(!doc.daysOfWeek.includes(dow(d.value))){
+        const n = nextAvailableDay(doc, d.value || todayStr());
+        $('#nextAvail').innerHTML = `Not available on selected date. Next available: <strong>${n}</strong> (${weekDaysText(doc.daysOfWeek)}).`;
+        d.value = n;
+      }else{
+        $('#nextAvail').textContent = '';
+      }
+      populateSlots();
+      $('#dayInfo').innerHTML = `<strong>${doc.name}</strong> works on <strong>${weekDaysText(doc.daysOfWeek)}</strong>. Standard session is 30 minutes.`;
+    }
+
+    function onDateChange(){
+      const id = $('#doctorSelect').value; if(!id) return;
+      const doc = doctorById(id);
+      const d = $('#date').value;
+      if(!doc.daysOfWeek.includes(dow(d))){
+        const n = nextAvailableDay(doc, d);
+        $('#nextAvail').innerHTML = `Doctor unavailable on ${d}. Suggested next available: <strong>${n}</strong>.`;
+        $('#date').value = n;
+      }else{
+        $('#nextAvail').textContent = '';
+      }
+      populateSlots();
+    }
+
+    function populateSlots(){
+      const id = $('#doctorSelect').value; if(!id) return;
+      const doc = doctorById(id);
+      const d = $('#date').value; if(!d) return;
+      const select = $('#slot');
+      const taken = new Set(takenSlots(doc.id, d));
+      const options = doc.slots.map(t=>({t, disabled:taken.has(t)}));
+      select.innerHTML = '<option value="">Select a time</option>' + options.map(o=>`<option ${o.disabled?'disabled':''} value="${o.t}">${o.t}${o.disabled?' — booked':''}</option>`).join('');
+      // preselect the first free
+      const first = options.find(o=>!o.disabled);
+      if(first) select.value = first.t;
+      else $('#nextAvail').innerHTML = `All times booked for ${d}. Try another date.`;
+    }
+
+    function toggleCard(){
+      const v = $('#payMethod').value;
+      $('#cardFields').style.display = v==='Card' ? 'block' : 'none';
+    }
+
+    function validatePayment(){
+      const method = $('#payMethod').value;
+      if(method==='Card'){
+        const num = $('#cardNumber').value.replace(/\s+/g,'');
+        const exp = $('#cardExp').value.trim();
+        const cvv = $('#cardCvv').value.trim();
+        if(num.length < 13 || num.length>19) return 'Invalid card number';
+        if(!/^\d{2}\/\d{2}$/.test(exp)) return 'Expiry must be MM/YY';
+        if(!/^\d{3,4}$/.test(cvv)) return 'CVV must be 3–4 digits';
+      }
+      if(!method) return 'Select a payment method';
+      return null;
+    }
+
+    function handleBooking(e){
+      e.preventDefault();
+      const doctorId = $('#doctorSelect').value;
+      const date = $('#date').value;
+      const time = $('#slot').value;
+      const name = $('#name').value.trim();
+      const phone = $('#phone').value.trim();
+      const email = $('#email').value.trim();
+      const method = $('#payMethod').value;
+      if(!doctorId || !date || !time) return alert('Please select doctor, date, and time');
+
+      const payErr = validatePayment(); if(payErr) return alert(payErr);
+
+      const doc = doctorById(doctorId);
+      const total = doc.price;
+
+      // make booking object
+      const booking = {
+        id: 'B' + Math.random().toString(36).slice(2,8).toUpperCase(),
+        doctorId, doctorName: doc.name,
+        specialty: doc.specialty,
+        date, time,
+        price: doc.price,
+        patientName: name, phone, email,
+        paymentMethod: method,
+        status: 'Pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // prevent double-booking
+      if(takenSlots(doctorId, date).includes(time)){
+        alert('Sorry, that time was just booked. Please pick another slot.');
+        populateSlots();
+        return;
+      }
+
+      const all = loadBookings();
+      all.push(booking); saveBookings(all);
+      localStorage.setItem(LS_MY_EMAIL, email);
+
+      renderMyBookings();
+      renderAdmin();
+
+      alert(`✅ Booking created!\n\nReference: ${booking.id}\nDoctor: ${doc.name}\nDate: ${date} @ ${time}\nAmount: ${fmtR(total)}\n\nStatus: Pending doctor approval`);
+      document.getElementById('bookingForm').reset();
+      $('#cardFields').style.display='none';
+      // keep doctor/price visible for convenience
+      $('#doctorSelect').value = doctorId; onDoctorChange();
+    }
+
+    /***********************\n     * My bookings (client)*
+     ***********************/
+    function renderMyBookings(){
+      const email = localStorage.getItem(LS_MY_EMAIL) || $('#email').value || '';
+      const wrap = $('#myBookingsTable');
+      const rows = loadBookings().filter(b=>!email || b.email===email);
+      if(!rows.length){ wrap.innerHTML = '<p class="help">No bookings yet. Book above, then return here to view status.</p>'; return; }
+
+      wrap.innerHTML = `<table><thead><tr>
+        <th>Ref</th><th>Doctor</th><th>Date</th><th>Time</th><th>Price</th><th>Status</th>
+      </tr></thead><tbody>
+        ${rows.map(r=>`<tr>
+          <td>${r.id}</td>
+          <td>${r.doctorName} <span class="help">(${r.specialty})</span></td>
+          <td>${r.date}</td>
+          <td>${r.time}</td>
+          <td>${fmtR(r.price)}</td>
+          <td>${statusBadge(r.status)}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+    }
+
+    function clearMyBookings(){
+      if(confirm('This will clear ALL demo bookings saved in this browser. Continue?')){
+        localStorage.removeItem(LS_BOOKINGS);
+        renderMyBookings();
+        renderAdmin();
+        alert('Cleared');
+      }
+    }
+
+    function statusBadge(s){
+      const cls = s==='Pending'?'pending':s==='Approved'?'approved':'declined';
+      const icon = s==='Pending'?'⏳':s==='Approved'?'✅':'❌';
+      return `<span class="status ${cls}">${icon} ${s}</span>`;
+    }
+
+    /************************\n     * Admin / Doctor queue *
+     ************************/
+    function renderAdmin(){
+      const wrap = $('#adminTable');
+      const rows = loadBookings().sort((a,b)=>a.status===b.status ? a.date.localeCompare(b.date) : a.status==='Pending'?-1:1);
+      if(!rows.length){ wrap.innerHTML = '<p class="help">No bookings in the system.</p>'; return; }
+
+      wrap.innerHTML = `<table><thead><tr>
+        <th>Ref</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Payment</th><th>Status</th><th>Actions</th>
+      </tr></thead><tbody>
+        ${rows.map(r=>`<tr>
+          <td>${r.id}</td>
+          <td>${r.patientName}<div class="help">${r.email} • ${r.phone}</div></td>
+          <td>${r.doctorName}</td>
+          <td>${r.date}</td>
+          <td>${r.time}</td>
+          <td>${r.paymentMethod}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>
+            ${r.status==='Pending' ? `
+              <button class="btn" onclick="approve('${r.id}', true)">Approve</button>
+              <button class="btn danger" onclick="approve('${r.id}', false)">Decline</button>
+            ` : '<span class="help">—</span>'}
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`;
+    }
+
+    function approve(id, ok){
+      const all = loadBookings();
+      const i = all.findIndex(b=>b.id===id);
+      if(i>-1){ all[i].status = ok ? 'Approved' : 'Declined'; saveBookings(all); }
+      renderMyBookings();
+      renderAdmin();
+      alert(`${ok?'✅ Approved':'❌ Declined'} booking ${id}`);
+    }
+
+    /***********************\n     * Init
+     ***********************/
+    function init(){
+      // seed UI
+      renderDoctors();
+      renderMyBookings();
+      renderAdmin();
+
+      // populate doctor select
+      const sel = $('#doctorSelect');
+      sel.innerHTML = '<option value="">Select a doctor</option>' + doctors.map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
+
+      // default date
+      $('#date').min = todayStr();
+      $('#date').value = todayStr();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
